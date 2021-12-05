@@ -5,7 +5,7 @@ import {employeeStepTwo} from "./stephandlers/employeeStepTwo";
 import * as dotenv from "dotenv"
 import {employeeWizardScene} from "./scenes/employeeScene";
 import {adminWizardScene} from "./scenes/adminScene";
-import {db} from "./firebase/firestore";
+import {db} from "./google/firestore";
 
 dotenv.config()
 

@@ -1,5 +1,5 @@
 import express from 'express'
-import {startBot} from "./bot";
+import {startBot} from "./bot"
 
 const app = express()
 const PORT = process.env.PORT || 8000
