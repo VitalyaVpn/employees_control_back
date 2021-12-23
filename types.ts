@@ -4,9 +4,16 @@ export interface MyWizardSession extends Scenes.WizardSessionData {
     // will be available under `ctx.scene.session.myWizardSessionProp`
     lastMessage: number
     endMessage: number
-    column: number | string | undefined
+    column: number | string
     currentTask: Task | null
+    pauseStart: number
+    pauseToString: string
+    pauseTime: number
+    pauseMsg: number
+    tasks: Array<string>
+    taskMessage: number
 }
+
 
 export interface MySession extends Scenes.WizardSession<MyWizardSession> {
     // will be available under `ctx.session.mySessionProp`
@@ -21,6 +28,6 @@ export interface MyContext extends Context {
 }
 
 export interface Task {
-    name?: string
-    column?: string | number | undefined
+    name: string
+    column: string | number
 }
