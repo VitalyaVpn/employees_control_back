@@ -12,6 +12,9 @@ export interface MyWizardSession extends Scenes.WizardSessionData {
     pauseMsg: number
     tasks: Array<string>
     taskMessage: number
+    table: string
+    name: string
+    taskStart: Date
 }
 
 

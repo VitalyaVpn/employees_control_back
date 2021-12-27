@@ -1,44 +1,89 @@
 import {google, sheets_v4, Auth} from 'googleapis'
-import {log} from "util";
+import {dateString} from "../functions";
 
 const auth: Auth.GoogleAuth = new google.auth.GoogleAuth({
     keyFile: 'google/credentials.json',
     scopes: 'https://www.googleapis.com/auth/spreadsheets'
 })
 
-export const accessSpreadSheet = async (type: string, id: number, range: string, task?:string, column?: number | string) => {
+export const appendTask = async (id: number, task:string, name:string, table:string, time: Date) => {
 
-    const client = await auth.getClient()
+    try {
+        const client = await auth.getClient()
 
-    const sheet: sheets_v4.Sheets = google.sheets({
-        version: 'v4',
-        auth: client,
-    })
+        const sheet: sheets_v4.Sheets = google.sheets({
+            version: 'v4',
+            auth: client,
+        })
 
-    const query:Array<string|number|Date|undefined> = range === 'Задачи' ? [id, task, new Date().toLocaleString()] : [id, new Date().toLocaleString()]
+        const query:Array<string|number|Date|undefined> = [id, name, task, time.toLocaleString().replace(/,/, '')]
 
-    if (type === 'update') {
-        const update = await sheet.spreadsheets.values.update({
+        const row = await sheet.spreadsheets.values.append({
             auth,
-            spreadsheetId: process.env.SPREADSHEET_ID,
+            spreadsheetId: table,
+            range: 'Задачи!A:D',
             valueInputOption: 'USER_ENTERED',
-            range: range === 'Смены' ? `Смены!C${column}` : `Задачи!D${column}`,
             requestBody: {
-                majorDimension: "ROWS",
                 values: [
-                    [new Date().toLocaleString()]
+                    query
                 ]
             }
         })
-        const col:string|undefined = range === 'Смены' ? update.data.updatedRange?.split(':C').pop() : update.data.updatedRange?.split(':D').pop()
+        const col:string|undefined = row.data.updates?.updatedRange?.split(':D').pop()
         return col
     }
+    catch (err) {
+        console.log(err)
+    }
+}
 
-    if (type === 'append') {
+export const updateTask = async (id: number, column: number | string, table:string, time:Date) => {
+
+    try {
+        const client = await auth.getClient()
+
+        const sheet: sheets_v4.Sheets = google.sheets({
+            version: 'v4',
+            auth: client,
+        })
+        const endTime = new Date()
+        const update = await sheet.spreadsheets.values.update({
+            auth,
+            spreadsheetId: table,
+            valueInputOption: 'USER_ENTERED',
+            range: `Задачи!E${column}:F${column}`,
+            requestBody: {
+                majorDimension: "ROWS",
+                values: [
+                    [endTime.toLocaleString().replace(/,/, ''), dateString(+endTime-+time)]
+                ]
+            }
+        })
+
+        const col:string|undefined = update.data.updatedRange?.split(':D').pop()
+        return col
+    }
+    catch (err) {
+        console.log(err)
+    }
+
+}
+
+export const appendShift = async (id: number, name:string, table:string) => {
+
+    try {
+        const client = await auth.getClient()
+
+        const sheet: sheets_v4.Sheets = google.sheets({
+            version: 'v4',
+            auth: client,
+        })
+        const query:Array<string|number|Date|undefined> = [id, name, new Date().toLocaleString().replace(/,/, '')]
+
         const row = await sheet.spreadsheets.values.append({
             auth,
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: range === 'Смены' ? 'Смены!A:C' :'Задачи!A:D',
+            spreadsheetId: table,
+            range: 'Смены!A:D',
             valueInputOption: 'USER_ENTERED',
             requestBody: {
                 values: [
@@ -47,122 +92,43 @@ export const accessSpreadSheet = async (type: string, id: number, range: string,
             }
         })
 
-        const col:string|undefined = range === 'Смены' ? row.data.updates?.updatedRange?.split(':B').pop() : row.data.updates?.updatedRange?.split(':C').pop()
+        const col:string|undefined = row.data.updates?.updatedRange?.split(':C').pop()
         return col
     }
-
-
-
-}
-
-export const appendTask = async (id: number, task:string) => {
-
-    const client = await auth.getClient()
-
-    const sheet: sheets_v4.Sheets = google.sheets({
-        version: 'v4',
-        auth: client,
-    })
-
-    const query:Array<string|number|Date|undefined> = [id, task, new Date().toLocaleString()]
-
-    const row = await sheet.spreadsheets.values.append({
-        auth,
-        spreadsheetId: process.env.SPREADSHEET_ID,
-        range: 'Задачи!A:D',
-        valueInputOption: 'USER_ENTERED',
-        requestBody: {
-            values: [
-                query
-            ]
-        }
-    })
-
-    const col:string|undefined = row.data.updates?.updatedRange?.split(':C').pop()
-    return col
+    catch (err) {
+        console.log(err)
+    }
 
 }
 
-export const updateTask = async (id: number, column: number | string) => {
+export const updateShift = async (id: number, column: number | string, table:string, time:string) => {
 
+    try {
+        const client = await auth.getClient()
 
-    const client = await auth.getClient()
+        const sheet: sheets_v4.Sheets = google.sheets({
+            version: 'v4',
+            auth: client,
+        })
 
-    const sheet: sheets_v4.Sheets = google.sheets({
-        version: 'v4',
-        auth: client,
-    })
-
-    const update = await sheet.spreadsheets.values.update({
-        auth,
-        spreadsheetId: process.env.SPREADSHEET_ID,
-        valueInputOption: 'USER_ENTERED',
-        range: `Задачи!D${column}`,
-        requestBody: {
-            majorDimension: "ROWS",
-            values: [
-                [new Date().toLocaleString()]
-            ]
-        }
-    })
-
-    const col:string|undefined = update.data.updatedRange?.split(':D').pop()
-    return col
-
-}
-
-export const appendShift = async (id: number) => {
-
-
-    const client = await auth.getClient()
-
-    const sheet: sheets_v4.Sheets = google.sheets({
-        version: 'v4',
-        auth: client,
-    })
-    const query:Array<string|number|Date|undefined> = [id, new Date().toLocaleString()]
-
-    const row = await sheet.spreadsheets.values.append({
-        auth,
-        spreadsheetId: process.env.SPREADSHEET_ID,
-        range: 'Смены!A:C',
-        valueInputOption: 'USER_ENTERED',
-        requestBody: {
-            values: [
-                query
-            ]
-        }
-    })
-
-    const col:string|undefined = row.data.updates?.updatedRange?.split(':B').pop()
-    return col
-
-}
-
-export const updateShift = async (id: number, column: number | string) => {
-
-    const client = await auth.getClient()
-
-    const sheet: sheets_v4.Sheets = google.sheets({
-        version: 'v4',
-        auth: client,
-    })
-
-    const update = await sheet.spreadsheets.values.update({
-        auth,
-        spreadsheetId: process.env.SPREADSHEET_ID,
-        valueInputOption: 'USER_ENTERED',
-        range: `Смены!C${column}`,
-        requestBody: {
-            majorDimension: "ROWS",
-            values: [
-                [new Date().toLocaleString()]
-            ]
-        }
-    })
-    const col:string|undefined = update.data.updatedRange?.split(':C').pop()
-    return col
-
+        const update = await sheet.spreadsheets.values.update({
+            auth,
+            spreadsheetId: table,
+            valueInputOption: 'USER_ENTERED',
+            range: `Смены!D${column}:E${column}`,
+            requestBody: {
+                majorDimension: "ROWS",
+                values: [
+                    [new Date().toLocaleString().replace(/,/, ''), time]
+                ]
+            }
+        })
+        const col:string|undefined = update.data.updatedRange?.split(':C').pop()
+        return col
+    }
+    catch (err) {
+        console.log(err)
+    }
 }
 
 

@@ -1,22 +1,8 @@
 import { initializeApp, cert  } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
-// import {ServiceAccount} from "firebase-admin";
 import * as dotenv from "dotenv"
 dotenv.config()
 
-
-// const secret = {
-//     type: process.env.TYPE,
-//     project_id: process.env.PROJECT_ID,
-//     private_key_id: process.env.PRIVATE_KEY_ID,
-//     private_key: process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'),
-//     client_email: process.env.CLIENT_EMAIL,
-//     client_id: process.env.CLIENT_ID,
-//     auth_uri: process.env.AUTH_URI,
-//     token_uri: process.env.TOKEN_URI,
-//     auth_provider_x509_cert_url: process.env.AUTH_PROVIDER_X509_CERT_URL,
-//     client_x509_cert_url: process.env.CLIENT_X509_CERT_URL
-// } as ServiceAccount
 
 initializeApp({
     credential: cert('google/secret.json')
@@ -31,6 +17,29 @@ export const getData = () => {
         const doc = await document.get()
 
         res(doc)
+    })
+
+}
+
+export const getCol = (id:string):Promise<boolean> => {
+    return new Promise<any>(async(res, rej) => {
+        let user = false
+        const collection = db.collection('users')
+        const doc = await collection.get()
+        doc.forEach((snap)=>{
+            if (snap.id === id) user = true
+        })
+        res(user)
+    })
+
+}
+
+export const getUser = (id:string) => {
+    return new Promise<any>(async(res, rej) => {
+        const document = db.collection('users').doc(id)
+        const doc = await document.get()
+
+        res(doc.data())
     })
 
 }
