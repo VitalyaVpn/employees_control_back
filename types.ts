@@ -34,3 +34,8 @@ export interface Task {
     name: string
     column: string | number
 }
+
+export interface  DateObject {
+    month: string
+    date: string
+}

@@ -1,5 +1,5 @@
 import {google, sheets_v4, Auth} from 'googleapis'
-import {dateString} from "../functions";
+import {dateString, getDate} from "../functions";
 
 const auth: Auth.GoogleAuth = new google.auth.GoogleAuth({
     keyFile: 'google/credentials.json',
@@ -9,19 +9,20 @@ const auth: Auth.GoogleAuth = new google.auth.GoogleAuth({
 export const appendTask = async (id: number, task:string, name:string, table:string, time: Date) => {
 
     try {
-        const client = await auth.getClient()
 
+        const client = await auth.getClient()
+        const {month, date} = getDate()
         const sheet: sheets_v4.Sheets = google.sheets({
             version: 'v4',
             auth: client,
         })
 
-        const query:Array<string|number|Date|undefined> = [id, name, task, time.toLocaleString().replace(/,/, '')]
+        const query:Array<string|number|Date|undefined> = [id, name, task, month, date, time.toLocaleString().replace(/,/, '')]
 
         const row = await sheet.spreadsheets.values.append({
             auth,
             spreadsheetId: table,
-            range: 'Задачи!A:D',
+            range: 'Задачи!A:F',
             valueInputOption: 'USER_ENTERED',
             requestBody: {
                 values: [
@@ -29,7 +30,7 @@ export const appendTask = async (id: number, task:string, name:string, table:str
                 ]
             }
         })
-        const col:string|undefined = row.data.updates?.updatedRange?.split(':D').pop()
+        const col:string|undefined = row.data.updates?.updatedRange?.split(':F').pop()
         return col
     }
     catch (err) {
@@ -51,7 +52,7 @@ export const updateTask = async (id: number, column: number | string, table:stri
             auth,
             spreadsheetId: table,
             valueInputOption: 'USER_ENTERED',
-            range: `Задачи!E${column}:F${column}`,
+            range: `Задачи!G${column}:H${column}`,
             requestBody: {
                 majorDimension: "ROWS",
                 values: [
@@ -60,7 +61,7 @@ export const updateTask = async (id: number, column: number | string, table:stri
             }
         })
 
-        const col:string|undefined = update.data.updatedRange?.split(':D').pop()
+        const col:string|undefined = update.data.updatedRange?.split(':H').pop()
         return col
     }
     catch (err) {
@@ -73,17 +74,17 @@ export const appendShift = async (id: number, name:string, table:string) => {
 
     try {
         const client = await auth.getClient()
-
+        const {month, date} = getDate()
         const sheet: sheets_v4.Sheets = google.sheets({
             version: 'v4',
             auth: client,
         })
-        const query:Array<string|number|Date|undefined> = [id, name, new Date().toLocaleString().replace(/,/, '')]
+        const query:Array<string|number|Date|undefined> = [id, name, month, date, new Date().toLocaleString().replace(/,/, '')]
 
         const row = await sheet.spreadsheets.values.append({
             auth,
             spreadsheetId: table,
-            range: 'Смены!A:D',
+            range: 'Смены!A:E',
             valueInputOption: 'USER_ENTERED',
             requestBody: {
                 values: [
@@ -92,7 +93,7 @@ export const appendShift = async (id: number, name:string, table:string) => {
             }
         })
 
-        const col:string|undefined = row.data.updates?.updatedRange?.split(':C').pop()
+        const col:string|undefined = row.data.updates?.updatedRange?.split(':E').pop()
         return col
     }
     catch (err) {
@@ -115,7 +116,7 @@ export const updateShift = async (id: number, column: number | string, table:str
             auth,
             spreadsheetId: table,
             valueInputOption: 'USER_ENTERED',
-            range: `Смены!D${column}:E${column}`,
+            range: `Смены!F${column}:G${column}`,
             requestBody: {
                 majorDimension: "ROWS",
                 values: [
@@ -123,7 +124,7 @@ export const updateShift = async (id: number, column: number | string, table:str
                 ]
             }
         })
-        const col:string|undefined = update.data.updatedRange?.split(':C').pop()
+        const col:string|undefined = update.data.updatedRange?.split(':G').pop()
         return col
     }
     catch (err) {

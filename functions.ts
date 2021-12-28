@@ -1,4 +1,5 @@
 import {Markup} from "telegraf";
+import {DateObject} from "./types";
 
 export const makeButtons = (tasks:Array<string>) => {
         if (tasks.length<=20) {
@@ -19,6 +20,7 @@ export const makeButtons = (tasks:Array<string>) => {
 }
 
 export const trigger = [...Array(40)].map((e, i) => i.toString())
+
 export const dateString = (time:number):string => {
     time = Math.trunc(time/1000)
     const tempHours = Math.trunc(time/3600)
@@ -28,4 +30,15 @@ export const dateString = (time:number):string => {
     const minutes = tempMinutes < 10 ? '0'+tempMinutes : tempMinutes.toString()
     const seconds = tempSeconds < 10 ? '0'+tempSeconds : tempSeconds.toString()
     return `${hours}:${minutes}:${seconds}`
+}
+
+export const getDate = ():DateObject => {
+    const dateTime = new Date()
+    const day = dateTime.getDate() < 10 ? `0${dateTime.getDate().toString()}` : dateTime.getDate().toString()
+    const month = dateTime.getMonth() + 1 < 10 ? `0${(dateTime.getDate() + 1).toString()}` : (dateTime.getDate() + 1).toString()
+    const year = dateTime.getFullYear().toString()
+    return {
+        month: month + '.' + year,
+        date: day + '.' + month + '.' + year
+    }
 }
