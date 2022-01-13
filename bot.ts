@@ -19,6 +19,7 @@ export const startBot = () => {
         bot.use(stage.middleware())
 
         bot.on(['text'], async (ctx) => {
+            console.log('here')
             switch (ctx.message.text) {
                 case 'Начать смену' :
                     ctx.scene.enter('employee-wizard')

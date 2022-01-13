@@ -5,13 +5,6 @@ import {appendShift} from "../google/spreadsheet";
 import {makeButtons} from "../functions";
 
 
-
-export const dateNow = ():string  => {
-    const date:Date = new Date()
-    const now:string = date.getDate().toString() + date.getMonth() + date.getFullYear()
-    return now
-}
-
 export const employeeStepOne = new Composer<MyContext>()
 
 
@@ -20,7 +13,7 @@ employeeStepOne.hears('Начать смену', async (ctx) => {
     try {
         const auth = await getCol(ctx.message.from.id.toString())
         if (!auth) {
-            await ctx.reply('Вы не являетесь работников')
+            await ctx.reply('Вы не являетесь сотрудником')
             return ctx.scene.leave()
         }
         const user = await getUser(ctx.message.from.id.toString())

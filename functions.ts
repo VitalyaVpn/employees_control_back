@@ -34,11 +34,12 @@ export const dateString = (time:number):string => {
 
 export const getDate = ():DateObject => {
     const dateTime = new Date()
-    const day = dateTime.getDate() < 10 ? `0${dateTime.getDate().toString()}` : dateTime.getDate().toString()
-    const month = dateTime.getMonth() + 1 < 10 ? `0${(dateTime.getDate() + 1).toString()}` : (dateTime.getDate() + 1).toString()
-    const year = dateTime.getFullYear().toString()
+    const date: string = dateTime.toLocaleDateString()
+    const dateArr:Array<string> = date.split('.')
+    dateArr.shift()
+    const month = dateArr.join('.')
     return {
-        month: month + '.' + year,
-        date: day + '.' + month + '.' + year
+        month,
+        date
     }
 }
