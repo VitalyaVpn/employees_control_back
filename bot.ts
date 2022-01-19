@@ -2,14 +2,14 @@ import { Telegraf, session, Scenes, Markup } from 'telegraf'
 import {MyContext} from './types'
 import * as dotenv from "dotenv"
 import {employeeWizardScene} from "./scenes/employeeScene";
-import {adminWizardScene} from "./scenes/adminScene";
+import {trigger} from "./functions";
 
 
 dotenv.config()
 export const startBot = () => {
     try {
         const bot = new Telegraf<MyContext>(process.env.BOT_TOKEN!)
-        const stage = new Scenes.Stage<MyContext>([employeeWizardScene, adminWizardScene])
+        const stage = new Scenes.Stage<MyContext>([employeeWizardScene])
         bot.use(session())
 
         bot.use((ctx, next) => {
@@ -19,14 +19,8 @@ export const startBot = () => {
         bot.use(stage.middleware())
 
         bot.on(['text'], async (ctx) => {
-            console.log('here')
+
             switch (ctx.message.text) {
-                case 'Начать смену' :
-                    ctx.scene.enter('employee-wizard')
-                    break
-                case 'Админ' :
-                    //ctx.scene.enter('admin-wizard')
-                    break
                 case '/start' :
                     await ctx.reply(
                         'Привет!',
@@ -35,9 +29,15 @@ export const startBot = () => {
                         ]).resize(true)
                     )
                     break
+                default:
+                    ctx.scene.enter('employee-wizard')
+                    break
             }
         } )
-
+        bot.action(trigger, async (ctx) => {
+            console.log('here')
+            ctx.scene.enter('employee-wizard')
+        })
         bot.launch().then(()=> {
             console.log('bot running')
         })

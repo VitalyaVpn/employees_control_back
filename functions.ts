@@ -3,19 +3,16 @@ import {DateObject} from "./types";
 
 export const makeButtons = (tasks:Array<string>) => {
         if (tasks.length<=20) {
-            const buttons = tasks.map((task, index)=> {
-                return [Markup.button.callback(task, (index).toString())]
-            })
-
-                return buttons
+            return tasks.map((task, index) => {
+                    return [Markup.button.callback(task, (index).toString())]
+                })
         }
         const temp = Array((Math.trunc(tasks.length/2) + Math.trunc(tasks.length%2)))
-        const buttons1 = [...temp].map((item, i)=>{
+        return [...temp].map((item, i) => {
 
-            return tasks[i*2+1] ? [Markup.button.callback(tasks[2*i], (2*i).toString()), Markup.button.callback(tasks[2*i+1], (2*i+1).toString())] : [Markup.button.callback(tasks[2*i], (2*i).toString())]
+            return tasks[i * 2 + 1] ? [Markup.button.callback(tasks[2 * i], (2 * i).toString()), Markup.button.callback(tasks[2 * i + 1], (2 * i + 1).toString())] : [Markup.button.callback(tasks[2 * i], (2 * i).toString())]
 
         })
-        return buttons1
 
 }
 

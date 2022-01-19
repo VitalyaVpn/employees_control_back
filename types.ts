@@ -15,6 +15,7 @@ export interface MyWizardSession extends Scenes.WizardSessionData {
     table: string
     name: string
     taskStart: Date
+    day: string
 }
 
 
