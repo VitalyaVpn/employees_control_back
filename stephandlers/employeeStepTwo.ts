@@ -10,6 +10,7 @@ export const employeeStepTwo = new Composer<MyContext>()
 
 employeeStepTwo.action(trigger, async (ctx) => {
     try {
+        console.log(ctx.from!.id, ctx.match[0], ctx.scene.session.tasks[+ctx.match[0]], ctx.wizard.cursor)
         await ctx.answerCbQuery()
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
@@ -95,6 +96,7 @@ employeeStepTwo.action(trigger, async (ctx) => {
 
 employeeStepTwo.hears(['Закончить смену'], async (ctx) => {
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
             ctx.scene.session.taskMessage = 0
@@ -159,6 +161,7 @@ employeeStepTwo.hears(['Закончить смену'], async (ctx) => {
 
 employeeStepTwo.hears(['Пауза'], async (ctx) => {
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
             ctx.scene.session.taskMessage = 0
@@ -207,6 +210,7 @@ employeeStepTwo.hears(['Пауза'], async (ctx) => {
 
 employeeStepTwo.on('text', async (ctx) => {
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
             ctx.scene.session.taskMessage = 0

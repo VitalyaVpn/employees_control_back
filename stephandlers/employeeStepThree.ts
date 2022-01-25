@@ -10,7 +10,9 @@ export const employeeStepThree = new Composer<MyContext>()
 
 employeeStepThree.hears(['Возобновить'], async (ctx) => {
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         ctx.scene.session.pauseTime = ctx.scene.session.pauseTime + Date.now() - ctx.scene.session.pauseStart
+        ctx.scene.session.pauseStart = 0
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
             ctx.scene.session.taskMessage = 0
@@ -57,6 +59,7 @@ employeeStepThree.hears(['Возобновить'], async (ctx) => {
 
 employeeStepThree.hears(['Закончить смену'], async (ctx) => {
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         ctx.scene.session.pauseTime = Date.now() - ctx.scene.session.pauseStart
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
@@ -118,11 +121,13 @@ employeeStepThree.hears(['Закончить смену'], async (ctx) => {
 })
 
 employeeStepThree.on('text', async (ctx) => {
+    console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
     await ctx.reply('Смена на паузе')
     return ctx.wizard.selectStep(2)
 })
 
 employeeStepThree.action(trigger, async (ctx) => {
+    console.log(ctx.from!.id, ctx.match[0], ctx.scene.session.tasks[+ctx.match[0]], ctx.wizard.cursor)
     await ctx.reply('Смена на паузе')
     return ctx.wizard.selectStep(2)
 })

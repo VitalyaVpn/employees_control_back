@@ -12,6 +12,7 @@ export const employeeStepOne = new Composer<MyContext>()
 employeeStepOne.hears('Начать смену', async (ctx) => {
 
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         const auth = await getCol(ctx.message.from.id.toString())
         if (!auth) {
             await ctx.reply('Вы не являетесь сотрудником')
@@ -86,6 +87,7 @@ employeeStepOne.hears('Начать смену', async (ctx) => {
 employeeStepOne.hears('Закончить смену', async (ctx) => {
 
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         const auth = await getCol(ctx.message.from.id.toString())
         if (!auth) {
             await ctx.reply('Вы не являетесь сотрудником')
@@ -118,6 +120,10 @@ employeeStepOne.hears('Закончить смену', async (ctx) => {
             }
         })
 
+        const user = await getUser(ctx.message.from.id.toString())
+        ctx.scene.session.name = user.name
+        ctx.scene.session.table = user.table
+
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
             ctx.scene.session.taskMessage = 0
@@ -135,9 +141,6 @@ employeeStepOne.hears('Закончить смену', async (ctx) => {
             ctx.scene.session.pauseMsg = 0
         }
 
-        const user = await getUser(ctx.message.from.id.toString())
-        ctx.scene.session.name = user.name
-        ctx.scene.session.table = user.table
 
         const ref = db.collection('users').doc(ctx.message.from.id.toString()).collection('data').doc('tasks')
         ctx.scene.session.tasks = []
@@ -196,6 +199,7 @@ employeeStepOne.hears('Закончить смену', async (ctx) => {
 
 employeeStepOne.hears('Пауза', async (ctx) => {
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         const auth = await getCol(ctx.message.from.id.toString())
         if (!auth) {
             await ctx.reply('Вы не являетесь сотрудником')
@@ -228,6 +232,10 @@ employeeStepOne.hears('Пауза', async (ctx) => {
             }
         })
 
+        const user = await getUser(ctx.message.from.id.toString())
+        ctx.scene.session.name = user.name
+        ctx.scene.session.table = user.table
+
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
             ctx.scene.session.taskMessage = 0
@@ -244,9 +252,7 @@ employeeStepOne.hears('Пауза', async (ctx) => {
             await ctx.deleteMessage(ctx.scene.session.pauseMsg)
             ctx.scene.session.pauseMsg = 0
         }
-        const user = await getUser(ctx.message.from.id.toString())
-        ctx.scene.session.name = user.name
-        ctx.scene.session.table = user.table
+
 
         const ref = db.collection('users').doc(ctx.message.from.id.toString()).collection('data').doc('tasks')
         ctx.scene.session.tasks = []
@@ -288,6 +294,7 @@ employeeStepOne.hears('Пауза', async (ctx) => {
 
 employeeStepOne.hears('Возобновить', async (ctx) => {
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         const auth = await getCol(ctx.message.from.id.toString())
         if (!auth) {
             await ctx.reply('Вы не являетесь сотрудником')
@@ -321,7 +328,13 @@ employeeStepOne.hears('Возобновить', async (ctx) => {
             }
         })
 
+        const user = await getUser(ctx.message.from.id.toString())
+        ctx.scene.session.name = user.name
+        ctx.scene.session.table = user.table
+
         ctx.scene.session.pauseTime = ctx.scene.session.pauseTime + Date.now() - ctx.scene.session.pauseStart
+        ctx.scene.session.pauseStart = 0
+
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
             ctx.scene.session.taskMessage = 0
@@ -341,9 +354,6 @@ employeeStepOne.hears('Возобновить', async (ctx) => {
             }
         })
 
-        const user = await getUser(ctx.message.from.id.toString())
-        ctx.scene.session.name = user.name
-        ctx.scene.session.table = user.table
 
         await updateTask(id, ctx.scene.session.pauseToString, ctx.scene.session.table,  new Date(ctx.scene.session.pauseStart))
         ctx.scene.session.pauseToString = ''
@@ -381,6 +391,7 @@ employeeStepOne.hears('Возобновить', async (ctx) => {
 
 employeeStepOne.on('text', async (ctx) => {
     try {
+        console.log(ctx.message.from.id, ctx.message.text, ctx.wizard.cursor)
         const auth = await getCol(ctx.message.from.id.toString())
         if (!auth) {
             await ctx.reply('Вы не являетесь сотрудником')
@@ -396,7 +407,14 @@ employeeStepOne.on('text', async (ctx) => {
             return ctx.scene.leave()
         }
 
-
+        const ref = db.collection('users').doc(ctx.message.from.id.toString()).collection('data').doc('tasks')
+        ctx.scene.session.tasks = []
+        await ref.get().then(snap => {
+            const data = snap.data()
+            for (let key in data) {
+                ctx.scene.session.tasks.push(data[key])
+            }
+        })
 
         const session = getSessionRef(id)
         session.get().then(async (snap)=>{
@@ -415,6 +433,10 @@ employeeStepOne.on('text', async (ctx) => {
             }
         })
 
+        const user = await getUser(ctx.message.from.id.toString())
+        ctx.scene.session.name = user.name
+        ctx.scene.session.table = user.table
+
         const isPause = await getPause(id)
         if(isPause) {
             await ctx.reply('Смена на паузе')
@@ -431,24 +453,8 @@ employeeStepOne.on('text', async (ctx) => {
         }
 
 
-        const user = await getUser(ctx.message.from.id.toString())
-        ctx.scene.session.name = user.name
-        ctx.scene.session.table = user.table
-
-        const ref = db.collection('users').doc(ctx.message.from.id.toString()).collection('data').doc('tasks')
-        ctx.scene.session.tasks = []
-        await ref.get().then(snap => {
-            const data = snap.data()
-            for (let key in data) {
-                ctx.scene.session.tasks.push(data[key])
-            }
-        })
 
         const message = await ctx.reply('Выберите задачу из списка или просто напишите её сообщением', Markup.inlineKeyboard(makeButtons(ctx.scene.session.tasks)))
-
-
-
-
 
         const dayRef = getDayRef(id, ctx.scene.session.day)
         if (ctx.scene.session.currentTask) {
@@ -511,6 +517,7 @@ employeeStepOne.on('text', async (ctx) => {
 
 employeeStepOne.action(trigger, async (ctx) => {
     try {
+        console.log(ctx.from!.id, ctx.match[0], ctx.wizard.cursor)
         const auth = await getCol(ctx.from!.id.toString())
         if (!auth) {
             await ctx.reply('Вы не являетесь сотрудником')
@@ -527,14 +534,19 @@ employeeStepOne.action(trigger, async (ctx) => {
             return ctx.scene.leave()
         }
 
+        const ref = db.collection('users').doc(ctx.from!.id.toString()).collection('data').doc('tasks')
+        ctx.scene.session.tasks = []
+        await ref.get().then(snap => {
+            const data = snap.data()
+            for (let key in data) {
+                ctx.scene.session.tasks.push(data[key])
+            }
+        })
+
         const session = getSessionRef(id)
         session.get().then(async (snap)=>{
             if(snap.data()){
                 const data = snap.data()
-                if(data!.pauseStart) {
-                    await ctx.reply('Смена на паузе')
-                    return ctx.scene.leave()
-                }
 
                 ctx.scene.session.lastMessage = data!.lastMessage
                 ctx.scene.session.endMessage = data!.endMessage
@@ -548,6 +560,10 @@ employeeStepOne.action(trigger, async (ctx) => {
                 ctx.scene.session.taskStart = data!.taskStart ? data!.taskStart.toDate() : data!.taskStart
             }
         })
+
+        const user = await getUser(ctx.from!.id.toString())
+        ctx.scene.session.name = user.name
+        ctx.scene.session.table = user.table
 
         const isPause = await getPause(id)
         if(isPause) {
@@ -567,18 +583,6 @@ employeeStepOne.action(trigger, async (ctx) => {
         }
 
 
-        const ref = db.collection('users').doc(ctx.from!.id.toString()).collection('data').doc('tasks')
-        ctx.scene.session.tasks = []
-        await ref.get().then(snap => {
-            const data = snap.data()
-            for (let key in data) {
-                ctx.scene.session.tasks.push(data[key])
-            }
-        })
-
-        const user = await getUser(ctx.from!.id.toString())
-        ctx.scene.session.name = user.name
-        ctx.scene.session.table = user.table
 
         const message = await ctx.reply('Выберите задачу из списка или просто напишите её сообщением', Markup.inlineKeyboard(makeButtons(ctx.scene.session.tasks)))
 
