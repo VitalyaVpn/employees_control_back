@@ -21,7 +21,6 @@ employeeStepTwo.action(trigger, async (ctx) => {
             ctx.scene.session.lastMessage = 0
         }
 
-
         const message = await ctx.reply('Выберите задачу из списка или просто напишите её сообщением', Markup.inlineKeyboard(makeButtons(ctx.scene.session.tasks)))
 
         const id = message.chat.id
@@ -174,7 +173,6 @@ employeeStepTwo.hears(['Пауза'], async (ctx) => {
             await ctx.deleteMessage(ctx.scene.session.endMessage)
             ctx.scene.session.endMessage = 0
         }
-
 
         ctx.scene.session.pauseStart = Date.now()
         const id = ctx.message.from.id

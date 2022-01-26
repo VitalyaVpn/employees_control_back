@@ -45,6 +45,7 @@ employeeStepOne.hears('Начать смену', async (ctx) => {
                 ctx.scene.session.tasks.push(data[key])
             }
         })
+        ctx.scene.session.tasks = ctx.scene.session.tasks.sort()
 
         const {date} = getDate()
         ctx.scene.session.day = date
@@ -150,6 +151,7 @@ employeeStepOne.hears('Закончить смену', async (ctx) => {
                 ctx.scene.session.tasks.push(data[key])
             }
         })
+        ctx.scene.session.tasks = ctx.scene.session.tasks.sort()
 
         const pause = dateString(ctx.scene.session.pauseTime)
         const dayRef = getDayRef(id, ctx.scene.session.day)
@@ -262,7 +264,7 @@ employeeStepOne.hears('Пауза', async (ctx) => {
                 ctx.scene.session.tasks.push(data[key])
             }
         })
-
+        ctx.scene.session.tasks = ctx.scene.session.tasks.sort()
         ctx.scene.session.pauseStart = Date.now()
 
         const column = await appendTask(id, 'Пауза', ctx.scene.session.name, ctx.scene.session.table,  new Date())
@@ -310,7 +312,6 @@ employeeStepOne.hears('Возобновить', async (ctx) => {
             return ctx.scene.leave()
         }
 
-
         const session = getSessionRef(id)
         session.get().then(async (snap)=>{
             if(snap.data()){
@@ -332,8 +333,7 @@ employeeStepOne.hears('Возобновить', async (ctx) => {
         ctx.scene.session.name = user.name
         ctx.scene.session.table = user.table
 
-        ctx.scene.session.pauseTime = ctx.scene.session.pauseTime + Date.now() - ctx.scene.session.pauseStart
-        ctx.scene.session.pauseStart = 0
+
 
         if(ctx.scene.session.taskMessage){
             await ctx.deleteMessage(ctx.scene.session.taskMessage)
@@ -353,9 +353,11 @@ employeeStepOne.hears('Возобновить', async (ctx) => {
                 ctx.scene.session.tasks.push(data[key])
             }
         })
-
+        ctx.scene.session.tasks = ctx.scene.session.tasks.sort()
 
         await updateTask(id, ctx.scene.session.pauseToString, ctx.scene.session.table,  new Date(ctx.scene.session.pauseStart))
+        ctx.scene.session.pauseTime = ctx.scene.session.pauseTime + Date.now() - ctx.scene.session.pauseStart
+        ctx.scene.session.pauseStart = 0
         ctx.scene.session.pauseToString = ''
 
         await ctx.reply('Смена возобновлена', Markup.keyboard([['Закончить смену', 'Пауза']]).resize(true))
@@ -415,6 +417,7 @@ employeeStepOne.on('text', async (ctx) => {
                 ctx.scene.session.tasks.push(data[key])
             }
         })
+        ctx.scene.session.tasks = ctx.scene.session.tasks.sort()
 
         const session = getSessionRef(id)
         session.get().then(async (snap)=>{
@@ -542,6 +545,7 @@ employeeStepOne.action(trigger, async (ctx) => {
                 ctx.scene.session.tasks.push(data[key])
             }
         })
+        ctx.scene.session.tasks = ctx.scene.session.tasks.sort()
 
         const session = getSessionRef(id)
         session.get().then(async (snap)=>{
